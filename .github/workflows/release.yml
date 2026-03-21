@@ -1,0 +1,139 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build
+        run: |
+          xcodebuild -scheme ClaudeUsageTracker \
+            -configuration Release \
+            -derivedDataPath build \
+            -archivePath build/ClaudeUsageTracker.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            ENABLE_HARDENED_RUNTIME=YES
+
+      - name: Package
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          APP_PATH="build/ClaudeUsageTracker.xcarchive/Products/Applications/ClaudeUsageTracker.app"
+
+          # Create DMG
+          mkdir -p build/dmg
+          cp -R "$APP_PATH" build/dmg/
+          ln -s /Applications build/dmg/Applications
+          hdiutil create -volname "ClaudeUsageTracker" \
+            -srcfolder build/dmg \
+            -ov -format UDZO \
+            "build/ClaudeUsageTracker-${TAG}.dmg"
+
+          # Create ZIP (versioned + latest for Homebrew)
+          cd build/dmg
+          zip -r "../ClaudeUsageTracker-${TAG}.zip" ClaudeUsageTracker.app
+          cp "../ClaudeUsageTracker-${TAG}.zip" "../ClaudeUsageTracker-latest.zip"
+
+      - name: Generate release notes
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          PREV_TAG=$(git tag --sort=-creatordate | grep -v "^${TAG}$" | head -1)
+
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"- %s" ${PREV_TAG}..${TAG})
+          fi
+
+          cat << EOF > release_notes.md
+          ## ClaudeUsageTracker ${TAG}
+
+          ### Installation
+
+          **Homebrew:**
+          \`\`\`bash
+          brew install --cask devsungmin/tap/claude-usage-tracker
+          \`\`\`
+
+          **Manual:** Download **ClaudeUsageTracker-${TAG}.dmg** below.
+
+          ### What's Changed
+
+          ${COMMITS}
+
+          ### Requirements
+
+          - macOS 13 Ventura or later
+          - Claude Pro / Max / Team / Enterprise plan
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release_notes.md
+          files: |
+            build/ClaudeUsageTracker-${{ github.ref_name }}.dmg
+            build/ClaudeUsageTracker-${{ github.ref_name }}.zip
+            build/ClaudeUsageTracker-latest.zip
+          draft: false
+          prerelease: false
+
+      - name: Update Homebrew tap
+        env:
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        if: env.TAP_GITHUB_TOKEN != ''
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          SHA=$(shasum -a 256 build/ClaudeUsageTracker-latest.zip | awk '{print $1}')
+
+          # Clone tap repo and update cask
+          git clone https://github.com/devsungmin/homebrew-tap.git /tmp/homebrew-tap
+          cd /tmp/homebrew-tap
+          git remote set-url origin "https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/devsungmin/homebrew-tap.git"
+          cd -
+          mkdir -p /tmp/homebrew-tap/Casks
+
+          cat > /tmp/homebrew-tap/Casks/claude-usage-tracker.rb << CASK
+          cask "claude-usage-tracker" do
+            version "${TAG#v}"
+            sha256 "${SHA}"
+
+            url "https://github.com/devsungmin/claude-usage-tracker/releases/download/${TAG}/ClaudeUsageTracker-${TAG}.zip"
+            name "Claude Usage Tracker"
+            desc "Real-time Claude AI usage monitor for the macOS menu bar"
+            homepage "https://github.com/devsungmin/claude-usage-tracker"
+
+            depends_on macos: ">= :ventura"
+
+            app "ClaudeUsageTracker.app"
+
+            zap trash: [
+              "~/Library/Preferences/dev.sungmin.ClaudeUsageTracker.plist",
+            ]
+          end
+          CASK
+
+          cd /tmp/homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/claude-usage-tracker.rb
+          git commit -m "Update claude-usage-tracker to ${TAG}" || true
+          git push
