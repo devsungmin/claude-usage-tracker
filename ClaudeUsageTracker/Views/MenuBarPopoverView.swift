@@ -33,14 +33,13 @@ struct UsageDashboardView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("사용 한도")
+                Text("dashboard.usage_limits")
                     .font(.headline)
                 Spacer()
                 Button(action: {
                     Task { await viewModel.refreshUsage() }
                 }) {
                     ZStack {
-                        // Fixed-size container to prevent layout shift
                         Color.clear.frame(width: 16, height: 16)
 
                         if viewModel.isLoading {
@@ -54,7 +53,7 @@ struct UsageDashboardView: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(viewModel.isLoading)
-                .help("새로고침")
+                .help(String(localized: "dashboard.refresh"))
             }
             HStack(spacing: 4) {
                 Image(systemName: viewModel.authMethod == .claudeCode ? "terminal.fill" : "key.fill")
@@ -77,19 +76,19 @@ struct UsageDashboardView: View {
     private var usageLimitsSection: some View {
         VStack(spacing: 14) {
             UsageLimitRow(
-                title: "현재 세션",
-                subtitle: "5시간 윈도우",
+                title: String(localized: "dashboard.current_session"),
+                subtitle: String(localized: "dashboard.five_hour_window"),
                 limit: viewModel.usage.fiveHour,
                 color: .blue
             )
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("주간 한도")
+                Text("dashboard.weekly_limits")
                     .font(.subheadline)
                     .fontWeight(.medium)
 
                 UsageLimitRow(
-                    title: "모든 모델",
+                    title: String(localized: "dashboard.all_models"),
                     subtitle: nil,
                     limit: viewModel.usage.sevenDay,
                     color: .orange
@@ -128,7 +127,7 @@ struct UsageDashboardView: View {
             }
 
             HStack {
-                Text("마지막 업데이트: \(viewModel.usage.formattedLastUpdated)")
+                Text("\(String(localized: "dashboard.last_updated")) \(viewModel.usage.formattedLastUpdated)")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
 
@@ -141,7 +140,7 @@ struct UsageDashboardView: View {
                         .font(.caption)
                 }
                 .buttonStyle(.borderless)
-                .help("설정")
+                .help(String(localized: "dashboard.settings"))
 
                 Button("Logout") {
                     viewModel.logout()
@@ -179,7 +178,7 @@ struct UsageLimitRow: View {
                     }
                 }
                 Spacer()
-                Text(limit.formattedPercent + " 사용됨")
+                Text("\(limit.formattedPercent) \(String(localized: "dashboard.used"))")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }

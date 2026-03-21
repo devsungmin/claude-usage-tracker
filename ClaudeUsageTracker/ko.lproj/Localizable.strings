@@ -1,0 +1,73 @@
+/* Login */
+"login.subtitle" = "Claude 사용량을 상단바에 표시합니다.";
+"login.claude_code_connect" = "Claude Code에서 자동 연결";
+"login.or" = "또는";
+"login.session_key" = "Session Key";
+"login.session_key_hint" = "claude.ai > 개발자 도구 > Cookies > sessionKey";
+"login.login_button" = "Login";
+"login.session_key_login" = "Session Key로 로그인";
+"login.invalid_session_key" = "올바른 Session Key 형식이 아닙니다.\nsk-ant-sid01-로 시작하는 값을 입력해주세요.";
+
+/* Dashboard */
+"dashboard.usage_limits" = "사용 한도";
+"dashboard.refresh" = "새로고침";
+"dashboard.current_session" = "현재 세션";
+"dashboard.five_hour_window" = "5시간 윈도우";
+"dashboard.weekly_limits" = "주간 한도";
+"dashboard.all_models" = "모든 모델";
+"dashboard.last_updated" = "마지막 업데이트:";
+"dashboard.settings" = "설정";
+"dashboard.used" = "사용됨";
+
+/* Settings */
+"settings.title" = "설정";
+"settings.status_bar_display" = "상단바 표시";
+"settings.display_item" = "표시할 항목";
+"settings.refresh" = "새로고침";
+"settings.refresh_interval" = "새로고침 간격";
+"settings.general" = "일반";
+"settings.launch_at_login" = "로그인 시 자동 실행";
+
+/* Display Modes */
+"mode.five_hour" = "현재 세션 (5시간)";
+"mode.seven_day" = "주간 한도 (모든 모델)";
+"mode.seven_day_sonnet" = "주간 한도 (Sonnet)";
+"mode.seven_day_opus" = "주간 한도 (Opus)";
+
+/* Intervals */
+"interval.1min" = "1분";
+"interval.5min" = "5분";
+"interval.15min" = "15분";
+
+/* Context Menu */
+"menu.refresh" = "새로고침";
+"menu.settings" = "설정...";
+"menu.logout" = "로그아웃";
+"menu.quit" = "종료";
+
+/* Reset Time */
+"reset.soon" = "곧 재설정";
+"reset.minutes" = "%d분 후 재설정";
+"reset.hours_minutes" = "%d시간 %d분 후 재설정";
+
+/* Last Updated */
+"updated.just_now" = "방금 전";
+"updated.minutes_ago" = "%d분 전";
+"updated.hours_ago" = "%d시간 전";
+
+/* Errors */
+"error.server_response" = "서버 응답 오류";
+"error.http_code" = "서버 요청 실패 (코드: %d)";
+"error.no_organization" = "조직 정보를 찾을 수 없습니다";
+"error.parse" = "응답 데이터를 파싱할 수 없습니다";
+"error.invalid_input" = "잘못된 입력값입니다";
+"error.keychain_save" = "Keychain 저장 실패: %d";
+"error.claude_code_not_found" = "Claude Code 인증 정보를 찾을 수 없습니다.\nclaude 명령어로 먼저 로그인해주세요.";
+"error.claude_code_expired" = "Claude Code 인증이 만료되었습니다. 다시 로그인해주세요.";
+"error.network" = "네트워크 연결을 확인해주세요.";
+"error.unknown" = "알 수 없는 오류가 발생했습니다.";
+
+/* Language */
+"language.system" = "시스템 기본값";
+"settings.language" = "언어";
+"settings.language_restart" = "언어 변경을 적용하려면 앱을 재시작하세요.";

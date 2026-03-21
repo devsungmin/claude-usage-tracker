@@ -171,7 +171,7 @@ enum KeychainError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .saveFailed(let status):
-            return "Keychain 저장 실패: \(status)"
+            return String(format: String(localized: "error.keychain_save"), Int32(status))
         }
     }
 }

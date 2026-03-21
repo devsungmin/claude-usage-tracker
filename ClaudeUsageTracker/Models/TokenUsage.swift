@@ -12,18 +12,19 @@ struct UsageLimit: Codable, Equatable {
         guard let resetTime = resetTime else { return "--" }
 
         let interval = resetTime.timeIntervalSince(Date())
-        if interval <= 0 { return "곧 재설정" }
+        if interval <= 0 { return String(localized: "reset.soon") }
 
         if interval < 3600 {
-            return "\(Int(interval / 60))분 후 재설정"
+            let minutes = Int(interval / 60)
+            return String(format: String(localized: "reset.minutes"), minutes)
         } else if interval < 86400 {
             let hours = Int(interval / 3600)
             let minutes = Int((interval.truncatingRemainder(dividingBy: 3600)) / 60)
-            return "\(hours)시간 \(minutes)분 후 재설정"
+            return String(format: String(localized: "reset.hours_minutes"), hours, minutes)
         } else {
             let dateFormatter = DateFormatter()
-            dateFormatter.locale = Locale(identifier: "ko_KR")
-            dateFormatter.dateFormat = "(E) a h:mm에 재설정"
+            dateFormatter.dateStyle = .short
+            dateFormatter.timeStyle = .short
             return dateFormatter.string(from: resetTime)
         }
     }
@@ -46,11 +47,11 @@ struct UsageData: Codable, Equatable {
     var formattedLastUpdated: String {
         let interval = Date().timeIntervalSince(lastUpdated)
         if interval < 60 {
-            return "방금 전"
+            return String(localized: "updated.just_now")
         } else if interval < 3600 {
-            return "\(Int(interval / 60))분 전"
+            return String(format: String(localized: "updated.minutes_ago"), Int(interval / 60))
         } else {
-            return "\(Int(interval / 3600))시간 전"
+            return String(format: String(localized: "updated.hours_ago"), Int(interval / 3600))
         }
     }
 

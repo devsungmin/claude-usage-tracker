@@ -18,7 +18,7 @@ class AppViewModel: ObservableObject {
     @Published var usage: UsageData = .empty
     @Published var isLoading = false
     @Published var errorMessage: String?
-    @Published var statusBarText: String = "Claude: --%"
+    @Published var statusBarText: String = "5h: --%"
     @Published var accountInfo: String?
     @Published var settings = UserSettings()
 
@@ -27,7 +27,6 @@ class AppViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        // Try Claude Code credentials first, then session key
         if let credential = KeychainService.getClaudeCodeCredential() {
             authState = .loggedIn
             authMethod = .claudeCode
@@ -59,7 +58,7 @@ class AppViewModel: ObservableObject {
             startAutoRefresh()
             Task { await refreshUsage() }
         } else {
-            errorMessage = "Claude Code 인증 정보를 찾을 수 없습니다.\nclaude 명령어로 먼저 로그인해주세요."
+            errorMessage = String(localized: "error.claude_code_not_found")
         }
     }
 
@@ -95,7 +94,7 @@ class AppViewModel: ObservableObject {
             switch authMethod {
             case .claudeCode:
                 guard let token = KeychainService.getClaudeCodeOAuthToken() else {
-                    errorMessage = "Claude Code 인증이 만료되었습니다. 다시 로그인해주세요."
+                    errorMessage = String(localized: "error.claude_code_expired")
                     authState = .loggedOut
                     isLoading = false
                     return
@@ -139,16 +138,15 @@ class AppViewModel: ObservableObject {
         }
     }
 
-    /// Returns a user-safe error message without exposing server internals
     private static func sanitizedErrorMessage(_ error: Error) -> String {
         if let apiError = error as? APIError {
             return apiError.localizedDescription
         }
         let nsError = error as NSError
         if nsError.domain == NSURLErrorDomain {
-            return "네트워크 연결을 확인해주세요."
+            return String(localized: "error.network")
         }
-        return "알 수 없는 오류가 발생했습니다."
+        return String(localized: "error.unknown")
     }
 
     func updateStatusBarText() {

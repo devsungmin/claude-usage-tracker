@@ -83,19 +83,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func showContextMenu(from button: NSStatusBarButton) {
         let menu = NSMenu()
 
-        menu.addItem(withTitle: "새로고침", action: #selector(refreshAction), keyEquivalent: "r").target = self
+        menu.addItem(withTitle: String(localized: "menu.refresh"), action: #selector(refreshAction), keyEquivalent: "r").target = self
         menu.addItem(.separator())
 
-        let settingsItem = menu.addItem(withTitle: "설정...", action: #selector(settingsAction), keyEquivalent: ",")
+        let settingsItem = menu.addItem(withTitle: String(localized: "menu.settings"), action: #selector(settingsAction), keyEquivalent: ",")
         settingsItem.target = self
 
         menu.addItem(.separator())
 
         if viewModel.authState == .loggedIn {
-            menu.addItem(withTitle: "로그아웃", action: #selector(logoutAction), keyEquivalent: "").target = self
+            menu.addItem(withTitle: String(localized: "menu.logout"), action: #selector(logoutAction), keyEquivalent: "").target = self
         }
 
-        menu.addItem(withTitle: "종료", action: #selector(quitAction), keyEquivalent: "q").target = self
+        menu.addItem(withTitle: String(localized: "menu.quit"), action: #selector(quitAction), keyEquivalent: "q").target = self
 
         statusItem.menu = menu
         button.performClick(nil)
@@ -131,7 +131,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let hostingController = NSHostingController(rootView: settingsView)
 
         let window = NSWindow(contentViewController: hostingController)
-        window.title = "설정"
+        window.title = String(localized: "settings.title")
         window.styleMask = [.titled, .closable]
         window.center()
         window.isReleasedWhenClosed = false

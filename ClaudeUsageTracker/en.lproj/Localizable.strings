@@ -1,0 +1,73 @@
+/* Login */
+"login.subtitle" = "Display Claude usage in the menu bar.";
+"login.claude_code_connect" = "Connect from Claude Code";
+"login.or" = "or";
+"login.session_key" = "Session Key";
+"login.session_key_hint" = "claude.ai > DevTools > Cookies > sessionKey";
+"login.login_button" = "Login";
+"login.session_key_login" = "Login with Session Key";
+"login.invalid_session_key" = "Invalid Session Key format.\nMust start with sk-ant-sid01-.";
+
+/* Dashboard */
+"dashboard.usage_limits" = "Usage Limits";
+"dashboard.refresh" = "Refresh";
+"dashboard.current_session" = "Current Session";
+"dashboard.five_hour_window" = "5-hour window";
+"dashboard.weekly_limits" = "Weekly Limits";
+"dashboard.all_models" = "All Models";
+"dashboard.last_updated" = "Last updated:";
+"dashboard.settings" = "Settings";
+"dashboard.used" = "used";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.status_bar_display" = "Status Bar Display";
+"settings.display_item" = "Display Item";
+"settings.refresh" = "Refresh";
+"settings.refresh_interval" = "Refresh Interval";
+"settings.general" = "General";
+"settings.launch_at_login" = "Launch at Login";
+
+/* Display Modes */
+"mode.five_hour" = "Current Session (5h)";
+"mode.seven_day" = "Weekly Limit (All Models)";
+"mode.seven_day_sonnet" = "Weekly Limit (Sonnet)";
+"mode.seven_day_opus" = "Weekly Limit (Opus)";
+
+/* Intervals */
+"interval.1min" = "1 min";
+"interval.5min" = "5 min";
+"interval.15min" = "15 min";
+
+/* Context Menu */
+"menu.refresh" = "Refresh";
+"menu.settings" = "Settings...";
+"menu.logout" = "Logout";
+"menu.quit" = "Quit";
+
+/* Reset Time */
+"reset.soon" = "Resets soon";
+"reset.minutes" = "Resets in %d min";
+"reset.hours_minutes" = "Resets in %dh %dm";
+
+/* Last Updated */
+"updated.just_now" = "Just now";
+"updated.minutes_ago" = "%d min ago";
+"updated.hours_ago" = "%dh ago";
+
+/* Errors */
+"error.server_response" = "Server response error";
+"error.http_code" = "Request failed (code: %d)";
+"error.no_organization" = "Organization not found";
+"error.parse" = "Failed to parse response";
+"error.invalid_input" = "Invalid input";
+"error.keychain_save" = "Keychain save failed: %d";
+"error.claude_code_not_found" = "Claude Code credentials not found.\nPlease log in with the claude command first.";
+"error.claude_code_expired" = "Claude Code auth expired. Please log in again.";
+"error.network" = "Please check your network connection.";
+"error.unknown" = "An unknown error occurred.";
+
+/* Language */
+"language.system" = "System Default";
+"settings.language" = "Language";
+"settings.language_restart" = "Restart the app to apply language change.";

@@ -2,13 +2,38 @@ import Foundation
 import Combine
 import ServiceManagement
 
-enum StatusBarDisplayMode: String, Codable, CaseIterable, Identifiable {
-    case fiveHour = "현재 세션 (5시간)"
-    case sevenDay = "주간 한도 (모든 모델)"
-    case sevenDaySonnet = "주간 한도 (Sonnet)"
-    case sevenDayOpus = "주간 한도 (Opus)"
+enum AppLanguage: String, Codable, CaseIterable, Identifiable {
+    case system = "system"
+    case en = "en"
+    case ko = "ko"
 
     var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .system: return String(localized: "language.system")
+        case .en: return "English"
+        case .ko: return "한국어"
+        }
+    }
+}
+
+enum StatusBarDisplayMode: String, Codable, CaseIterable, Identifiable {
+    case fiveHour = "five_hour"
+    case sevenDay = "seven_day"
+    case sevenDaySonnet = "seven_day_sonnet"
+    case sevenDayOpus = "seven_day_opus"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .fiveHour: return String(localized: "mode.five_hour")
+        case .sevenDay: return String(localized: "mode.seven_day")
+        case .sevenDaySonnet: return String(localized: "mode.seven_day_sonnet")
+        case .sevenDayOpus: return String(localized: "mode.seven_day_opus")
+        }
+    }
 
     var shortLabel: String {
         switch self {
@@ -33,6 +58,12 @@ class UserSettings: ObservableObject {
             updateLaunchAtLogin()
         }
     }
+    @Published var language: AppLanguage {
+        didSet {
+            save()
+            applyLanguage()
+        }
+    }
 
     private let defaults = UserDefaults.standard
 
@@ -45,12 +76,24 @@ class UserSettings: ObservableObject {
         let stored = defaults.double(forKey: "refreshInterval")
         self.refreshInterval = Self.allowedIntervals.contains(stored) ? stored : 60
         self.launchAtLogin = defaults.bool(forKey: "launchAtLogin")
+        self.language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .system
+        applyLanguage()
     }
 
     private func save() {
         defaults.set(displayMode.rawValue, forKey: "displayMode")
         defaults.set(refreshInterval, forKey: "refreshInterval")
         defaults.set(launchAtLogin, forKey: "launchAtLogin")
+        defaults.set(language.rawValue, forKey: "language")
+    }
+
+    private func applyLanguage() {
+        switch language {
+        case .system:
+            UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+        case .en, .ko:
+            UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
+        }
     }
 
     private func updateLaunchAtLogin() {

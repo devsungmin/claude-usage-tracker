@@ -217,15 +217,15 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "서버 응답 오류"
+            return String(localized: "error.server_response")
         case .httpError(let code):
-            return "서버 요청 실패 (코드: \(code))"
+            return String(format: String(localized: "error.http_code"), code)
         case .noOrganization:
-            return "조직 정보를 찾을 수 없습니다"
+            return String(localized: "error.no_organization")
         case .parseError:
-            return "응답 데이터를 파싱할 수 없습니다"
+            return String(localized: "error.parse")
         case .invalidInput:
-            return "잘못된 입력값입니다"
+            return String(localized: "error.invalid_input")
         }
     }
 }
