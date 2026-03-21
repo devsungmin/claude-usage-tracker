@@ -39,6 +39,7 @@ A macOS menu bar app that displays your Claude AI usage limits in real time — 
 - 🔑 **Session Key login** — supports manual login via `claude.ai` session cookie (validated format: `sk-ant-sid01-`)
 - 📈 **Popover dashboard** — left-click the menu bar icon to see all usage limits with animated, color-coded progress bars
 - 🖱️ **Right-click menu** — quick access to Refresh, Settings, Logout, and Quit
+- 🌐 **English / Korean** — in-app language selector (System Default, English, 한국어)
 - ⚙️ **Configurable** — choose which metric to display, set refresh interval (1m / 5m / 15m), launch at login
 - 🔒 **Secure** — credentials stored in macOS Keychain (`WhenUnlockedThisDeviceOnly`), input sanitization against header injection, error messages sanitized
 

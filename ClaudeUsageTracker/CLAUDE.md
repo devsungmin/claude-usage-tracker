@@ -9,6 +9,7 @@
 - 우클릭: 컨텍스트 메뉴 (새로고침, 설정, 로그아웃, 종료)
 - 연결 방식 아이콘 표시 (터미널/키 아이콘 + 계정 이메일)
 - 로그인 시 자동 실행 (SMAppService)
+- 영어/한국어 앱 내 언어 선택 (Localizable.strings, AppleLanguages)
 
 ## 인증 방식
 
