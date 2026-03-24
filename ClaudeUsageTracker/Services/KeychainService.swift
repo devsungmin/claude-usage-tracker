@@ -6,6 +6,12 @@ struct ClaudeCodeCredential {
     let accountEmail: String?
 }
 
+enum CredentialResult {
+    case found(ClaudeCodeCredential)
+    case expired
+    case notFound
+}
+
 enum KeychainService {
     private static let service = "com.claudeusagetracker"
     private static let sessionKeyAccount = "claude-session-key"
@@ -27,22 +33,35 @@ enum KeychainService {
     // MARK: - Claude Code OAuth Token
 
     static func getClaudeCodeOAuthToken() -> String? {
-        getClaudeCodeCredential()?.accessToken
-    }
-
-    static func getClaudeCodeCredential() -> ClaudeCodeCredential? {
-        // 1. Try keychain first
-        if let credential = readClaudeCodeKeychain() {
-            return credential
-        }
-        // 2. Fallback: try reading from ~/.claude/.credentials.json
-        if let token = readCredentialsFile() {
-            return ClaudeCodeCredential(accessToken: token, accountEmail: nil)
+        if case .found(let credential) = getClaudeCodeCredential() {
+            return credential.accessToken
         }
         return nil
     }
 
-    private static func readCredentialsFile() -> String? {
+    static func getClaudeCodeCredential() -> CredentialResult {
+        // 1. Try keychain first
+        let keychainResult = readClaudeCodeKeychain()
+        if case .found = keychainResult { return keychainResult }
+        if case .expired = keychainResult { return .expired }
+
+        // 2. Fallback: try reading from ~/.claude/.credentials.json
+        let fileResult = readCredentialsFile()
+        if case .found(let token) = fileResult {
+            return .found(ClaudeCodeCredential(accessToken: token, accountEmail: nil))
+        }
+        if case .expired = fileResult { return .expired }
+
+        return .notFound
+    }
+
+    private enum FileCredentialResult {
+        case found(String)
+        case expired
+        case notFound
+    }
+
+    private static func readCredentialsFile() -> FileCredentialResult {
         let paths = [
             NSHomeDirectory() + "/.claude/.credentials.json",
             NSHomeDirectory() + "/.claude/credentials.json",
@@ -59,15 +78,15 @@ enum KeychainService {
                 // Check expiry
                 if let expiresAt = oauth["expiresAt"] as? Double {
                     let expiryDate = Date(timeIntervalSince1970: expiresAt / 1000)
-                    if expiryDate < Date() { continue }
+                    if expiryDate < Date() { return .expired }
                 }
-                return accessToken
+                return .found(accessToken)
             }
         }
-        return nil
+        return .notFound
     }
 
-    private static func readClaudeCodeKeychain() -> ClaudeCodeCredential? {
+    private static func readClaudeCodeKeychain() -> CredentialResult {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "Claude Code-credentials",
@@ -85,7 +104,7 @@ enum KeychainService {
               let jsonString = String(data: data, encoding: .utf8),
               let jsonData = jsonString.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
-            return nil
+            return .notFound
         }
 
         let account = item[kSecAttrAccount as String] as? String
@@ -95,12 +114,12 @@ enum KeychainService {
             // Check expiry
             if let expiresAtMs = oauth["expiresAt"] as? Double {
                 let expiryDate = Date(timeIntervalSince1970: expiresAtMs / 1000)
-                if expiryDate < Date() { return nil }
+                if expiryDate < Date() { return .expired }
             }
-            return ClaudeCodeCredential(accessToken: token, accountEmail: account)
+            return .found(ClaudeCodeCredential(accessToken: token, accountEmail: account))
         }
 
-        return nil
+        return .notFound
     }
 
     // MARK: - Session Key Validation

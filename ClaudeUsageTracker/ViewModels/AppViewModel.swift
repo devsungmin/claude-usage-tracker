@@ -27,7 +27,7 @@ class AppViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        if let credential = KeychainService.getClaudeCodeCredential() {
+        if case .found(let credential) = KeychainService.getClaudeCodeCredential() {
             authState = .loggedIn
             authMethod = .claudeCode
             accountInfo = credential.accountEmail
@@ -51,13 +51,16 @@ class AppViewModel: ObservableObject {
     }
 
     func connectClaudeCode() {
-        if let credential = KeychainService.getClaudeCodeCredential() {
+        switch KeychainService.getClaudeCodeCredential() {
+        case .found(let credential):
             authMethod = .claudeCode
             authState = .loggedIn
             accountInfo = credential.accountEmail
             startAutoRefresh()
             Task { await refreshUsage() }
-        } else {
+        case .expired:
+            errorMessage = String(localized: "error.claude_code_expired")
+        case .notFound:
             errorMessage = String(localized: "error.claude_code_not_found")
         }
     }
