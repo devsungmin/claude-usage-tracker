@@ -1,7 +1,7 @@
 import Foundation
 
 extension Bundle {
-    var appVersion: String {
+    nonisolated var appVersion: String {
         infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     }
 }
@@ -15,7 +15,7 @@ actor AnthropicAPIService {
         let name: String
     }
 
-    private let session: URLSession = {
+    private let session: URLSession = { 
         let config = URLSessionConfiguration.default
         config.tlsMinimumSupportedProtocolVersion = .TLSv12
         config.tlsMaximumSupportedProtocolVersion = .TLSv13
