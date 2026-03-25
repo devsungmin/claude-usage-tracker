@@ -155,6 +155,11 @@ struct UsageDashboardView: View {
                 .buttonStyle(.borderless)
                 .font(.caption)
             }
+
+            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")")
+                .font(.caption2)
+                .foregroundStyle(.quaternary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 }

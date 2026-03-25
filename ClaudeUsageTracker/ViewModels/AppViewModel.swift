@@ -27,15 +27,28 @@ class AppViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        if case .found(let credential) = KeychainService.getClaudeCodeCredential() {
+        switch KeychainService.getClaudeCodeCredential() {
+        case .found(let credential):
             authState = .loggedIn
             authMethod = .claudeCode
             accountInfo = credential.accountEmail
             Task { await refreshUsage() }
-        } else if KeychainService.getSessionKey() != nil {
-            authState = .loggedIn
-            authMethod = .sessionKey
-            Task { await refreshUsage() }
+        case .expired(let refreshToken):
+            authMethod = .claudeCode
+            Task {
+                if let refreshToken, await tryRefreshOAuthToken(refreshToken),
+                   case .found(let credential) = KeychainService.getClaudeCodeCredential() {
+                    authState = .loggedIn
+                    accountInfo = credential.accountEmail
+                    await refreshUsage()
+                }
+            }
+        case .notFound:
+            if KeychainService.getSessionKey() != nil {
+                authState = .loggedIn
+                authMethod = .sessionKey
+                Task { await refreshUsage() }
+            }
         }
         observeSettings()
         startAutoRefresh()
@@ -58,8 +71,18 @@ class AppViewModel: ObservableObject {
             accountInfo = credential.accountEmail
             startAutoRefresh()
             Task { await refreshUsage() }
-        case .expired:
-            errorMessage = String(localized: "error.claude_code_expired")
+        case .expired(let refreshToken):
+            if let refreshToken {
+                Task {
+                    if await tryRefreshOAuthToken(refreshToken) {
+                        connectClaudeCode()
+                    } else {
+                        errorMessage = String(localized: "error.claude_code_expired")
+                    }
+                }
+            } else {
+                errorMessage = String(localized: "error.claude_code_expired")
+            }
         case .notFound:
             errorMessage = String(localized: "error.claude_code_not_found")
         }
@@ -96,8 +119,22 @@ class AppViewModel: ObservableObject {
         do {
             switch authMethod {
             case .claudeCode:
-                guard let token = KeychainService.getClaudeCodeOAuthToken() else {
-                    errorMessage = String(localized: "error.claude_code_expired")
+                let token: String
+                switch KeychainService.getClaudeCodeCredential() {
+                case .found(let credential):
+                    token = credential.accessToken
+                case .expired(let refreshToken):
+                    if let refreshToken, await tryRefreshOAuthToken(refreshToken),
+                       let newToken = KeychainService.getClaudeCodeOAuthToken() {
+                        token = newToken
+                    } else {
+                        errorMessage = String(localized: "error.claude_code_expired")
+                        authState = .loggedOut
+                        isLoading = false
+                        return
+                    }
+                case .notFound:
+                    errorMessage = String(localized: "error.claude_code_not_found")
                     authState = .loggedOut
                     isLoading = false
                     return
@@ -138,6 +175,21 @@ class AppViewModel: ObservableObject {
             Task { @MainActor [weak self] in
                 await self?.refreshUsage()
             }
+        }
+    }
+
+    private func tryRefreshOAuthToken(_ refreshToken: String) async -> Bool {
+        do {
+            let response = try await apiService.refreshOAuthToken(refreshToken: refreshToken)
+            let expiresAt = Date().timeIntervalSince1970 * 1000 + Double(response.expires_in) * 1000
+            KeychainService.updateClaudeCodeOAuthTokens(
+                accessToken: response.access_token,
+                refreshToken: response.refresh_token,
+                expiresAt: expiresAt
+            )
+            return true
+        } catch {
+            return false
         }
     }
 

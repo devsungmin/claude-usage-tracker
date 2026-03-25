@@ -3,12 +3,13 @@ import Security
 
 struct ClaudeCodeCredential {
     let accessToken: String
+    let refreshToken: String?
     let accountEmail: String?
 }
 
 enum CredentialResult {
     case found(ClaudeCodeCredential)
-    case expired
+    case expired(refreshToken: String?)
     case notFound
 }
 
@@ -43,21 +44,25 @@ enum KeychainService {
         // 1. Try keychain first
         let keychainResult = readClaudeCodeKeychain()
         if case .found = keychainResult { return keychainResult }
-        if case .expired = keychainResult { return .expired }
+        if case .expired = keychainResult { return keychainResult }
 
         // 2. Fallback: try reading from ~/.claude/.credentials.json
         let fileResult = readCredentialsFile()
-        if case .found(let token) = fileResult {
-            return .found(ClaudeCodeCredential(accessToken: token, accountEmail: nil))
+        switch fileResult {
+        case .found(let accessToken, let refreshToken):
+            return .found(ClaudeCodeCredential(accessToken: accessToken, refreshToken: refreshToken, accountEmail: nil))
+        case .expired(let refreshToken):
+            return .expired(refreshToken: refreshToken)
+        case .notFound:
+            break
         }
-        if case .expired = fileResult { return .expired }
 
         return .notFound
     }
 
     private enum FileCredentialResult {
-        case found(String)
-        case expired
+        case found(accessToken: String, refreshToken: String?)
+        case expired(refreshToken: String?)
         case notFound
     }
 
@@ -75,12 +80,13 @@ enum KeychainService {
 
             if let oauth = json["claudeAiOauth"] as? [String: Any],
                let accessToken = oauth["accessToken"] as? String {
+                let refreshToken = oauth["refreshToken"] as? String
                 // Check expiry
                 if let expiresAt = oauth["expiresAt"] as? Double {
                     let expiryDate = Date(timeIntervalSince1970: expiresAt / 1000)
-                    if expiryDate < Date() { return .expired }
+                    if expiryDate < Date() { return .expired(refreshToken: refreshToken) }
                 }
-                return .found(accessToken)
+                return .found(accessToken: accessToken, refreshToken: refreshToken)
             }
         }
         return .notFound
@@ -111,15 +117,59 @@ enum KeychainService {
 
         if let oauth = json["claudeAiOauth"] as? [String: Any],
            let token = oauth["accessToken"] as? String {
+            let refreshToken = oauth["refreshToken"] as? String
             // Check expiry
             if let expiresAtMs = oauth["expiresAt"] as? Double {
                 let expiryDate = Date(timeIntervalSince1970: expiresAtMs / 1000)
-                if expiryDate < Date() { return .expired }
+                if expiryDate < Date() { return .expired(refreshToken: refreshToken) }
             }
-            return .found(ClaudeCodeCredential(accessToken: token, accountEmail: account))
+            return .found(ClaudeCodeCredential(accessToken: token, refreshToken: refreshToken, accountEmail: account))
         }
 
         return .notFound
+    }
+
+    // MARK: - Claude Code OAuth Token Update
+
+    static func updateClaudeCodeOAuthTokens(accessToken: String, refreshToken: String, expiresAt: Double) {
+        let readQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "Claude Code-credentials",
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(readQuery as CFDictionary, &result)
+
+        guard status == errSecSuccess,
+              let data = result as? Data,
+              let jsonString = String(data: data, encoding: .utf8),
+              let jsonData = jsonString.data(using: .utf8),
+              var json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+            return
+        }
+
+        var oauth = json["claudeAiOauth"] as? [String: Any] ?? [:]
+        oauth["accessToken"] = accessToken
+        oauth["refreshToken"] = refreshToken
+        oauth["expiresAt"] = expiresAt
+        json["claudeAiOauth"] = oauth
+
+        guard let updatedData = try? JSONSerialization.data(withJSONObject: json),
+              let updatedString = String(data: updatedData, encoding: .utf8),
+              let updatedBytes = updatedString.data(using: .utf8) else {
+            return
+        }
+
+        let updateQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "Claude Code-credentials",
+        ]
+        let updateAttributes: [String: Any] = [
+            kSecValueData as String: updatedBytes,
+        ]
+        SecItemUpdate(updateQuery as CFDictionary, updateAttributes as CFDictionary)
     }
 
     // MARK: - Session Key Validation

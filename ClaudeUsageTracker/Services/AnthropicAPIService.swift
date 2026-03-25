@@ -17,6 +17,34 @@ actor AnthropicAPIService {
         return URLSession(configuration: config)
     }()
 
+    // MARK: - OAuth Token Refresh
+
+    struct OAuthTokenResponse: Codable {
+        let access_token: String
+        let refresh_token: String
+        let expires_in: Int
+    }
+
+    func refreshOAuthToken(refreshToken: String) async throws -> OAuthTokenResponse {
+        let sanitized = try Self.sanitizeHeaderValue(refreshToken)
+        let url = URL(string: "https://console.anthropic.com/v1/oauth/token")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: String] = [
+            "grant_type": "refresh_token",
+            "refresh_token": sanitized,
+            "client_id": "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await session.data(for: request)
+        try validateResponse(response, data: data)
+
+        return try JSONDecoder().decode(OAuthTokenResponse.self, from: data)
+    }
+
     // MARK: - Fetch via Session Cookie (Primary)
 
     func fetchUsageWithSession(sessionKey: String) async throws -> UsageData {

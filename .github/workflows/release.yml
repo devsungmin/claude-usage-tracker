@@ -24,6 +24,7 @@ jobs:
 
       - name: Build
         run: |
+          VERSION=${GITHUB_REF_NAME#v}
           xcodebuild -scheme ClaudeUsageTracker \
             -configuration Release \
             -derivedDataPath build \
@@ -33,7 +34,8 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="" \
-            ENABLE_HARDENED_RUNTIME=YES
+            ENABLE_HARDENED_RUNTIME=YES \
+            MARKETING_VERSION="$VERSION"
 
       - name: Package
         run: |

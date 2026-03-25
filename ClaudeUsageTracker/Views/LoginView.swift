@@ -81,6 +81,10 @@ struct LoginView: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(4)
             }
+
+            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")")
+                .font(.caption2)
+                .foregroundStyle(.quaternary)
         }
         .padding(20)
         .frame(width: 320)
