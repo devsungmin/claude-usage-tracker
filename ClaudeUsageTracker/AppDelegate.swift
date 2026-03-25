@@ -34,7 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "brain.head.profile", accessibilityDescription: "Claude Usage Tracker")
+            button.image = NSImage(systemSymbolName: "brain.head.profile", accessibilityDescription: "Claude Token Tracker")
             button.imagePosition = .imageLeading
             button.title = viewModel.statusBarText
             button.action = #selector(handleClick)

@@ -1,9 +1,14 @@
 import Foundation
 
+extension Bundle {
+    var appVersion: String {
+        infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+    }
+}
+
 actor AnthropicAPIService {
 
-    static let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-    static let userAgent = "ClaudeUsageTracker/\(appVersion)"
+    static let userAgent = "ClaudeTokenTracker/\(Bundle.main.appVersion)"
 
     struct AccountInfo: Codable {
         let uuid: String

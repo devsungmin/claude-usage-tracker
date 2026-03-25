@@ -27,28 +27,24 @@ class AppViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        switch KeychainService.getClaudeCodeCredential() {
-        case .found(let credential):
-            authState = .loggedIn
-            authMethod = .claudeCode
-            accountInfo = credential.accountEmail
-            Task { await refreshUsage() }
-        case .expired(let refreshToken):
+        let claudeResult = KeychainService.getClaudeCodeCredential()
+        let hasClaudeCredential = { if case .found = claudeResult { return true }; return false }()
+        let hasExpiredCredential = { if case .expired = claudeResult { return true }; return false }()
+
+        if hasClaudeCredential || hasExpiredCredential {
             authMethod = .claudeCode
             Task {
-                if let refreshToken, await tryRefreshOAuthToken(refreshToken),
-                   case .found(let credential) = KeychainService.getClaudeCodeCredential() {
+                let result = await resolveClaudeCodeCredential()
+                if let credential = result.credential {
                     authState = .loggedIn
                     accountInfo = credential.accountEmail
                     await refreshUsage()
                 }
             }
-        case .notFound:
-            if KeychainService.getSessionKey() != nil {
-                authState = .loggedIn
-                authMethod = .sessionKey
-                Task { await refreshUsage() }
-            }
+        } else if KeychainService.getSessionKey() != nil {
+            authState = .loggedIn
+            authMethod = .sessionKey
+            Task { await refreshUsage() }
         }
         observeSettings()
         startAutoRefresh()
@@ -64,27 +60,17 @@ class AppViewModel: ObservableObject {
     }
 
     func connectClaudeCode() {
-        switch KeychainService.getClaudeCodeCredential() {
-        case .found(let credential):
-            authMethod = .claudeCode
-            authState = .loggedIn
-            accountInfo = credential.accountEmail
-            startAutoRefresh()
-            Task { await refreshUsage() }
-        case .expired(let refreshToken):
-            if let refreshToken {
-                Task {
-                    if await tryRefreshOAuthToken(refreshToken) {
-                        connectClaudeCode()
-                    } else {
-                        errorMessage = String(localized: "error.claude_code_expired")
-                    }
-                }
+        Task {
+            let result = await resolveClaudeCodeCredential()
+            if let credential = result.credential {
+                authMethod = .claudeCode
+                authState = .loggedIn
+                accountInfo = credential.accountEmail
+                startAutoRefresh()
+                await refreshUsage()
             } else {
-                errorMessage = String(localized: "error.claude_code_expired")
+                errorMessage = result.error
             }
-        case .notFound:
-            errorMessage = String(localized: "error.claude_code_not_found")
         }
     }
 
@@ -119,27 +105,15 @@ class AppViewModel: ObservableObject {
         do {
             switch authMethod {
             case .claudeCode:
-                let token: String
-                switch KeychainService.getClaudeCodeCredential() {
-                case .found(let credential):
-                    token = credential.accessToken
-                case .expired(let refreshToken):
-                    if let refreshToken, await tryRefreshOAuthToken(refreshToken),
-                       let newToken = KeychainService.getClaudeCodeOAuthToken() {
-                        token = newToken
-                    } else {
-                        errorMessage = String(localized: "error.claude_code_expired")
-                        authState = .loggedOut
-                        isLoading = false
-                        return
-                    }
-                case .notFound:
-                    errorMessage = String(localized: "error.claude_code_not_found")
+                let result = await resolveClaudeCodeCredential()
+                guard let credential = result.credential else {
+                    errorMessage = result.error
                     authState = .loggedOut
                     isLoading = false
                     return
                 }
-                usage = try await apiService.fetchUsageWithOAuth(token: token)
+                accountInfo = credential.accountEmail
+                usage = try await apiService.fetchUsageWithOAuth(token: credential.accessToken)
 
             case .sessionKey:
                 guard let sessionKey = KeychainService.getSessionKey() else {
@@ -175,6 +149,21 @@ class AppViewModel: ObservableObject {
             Task { @MainActor [weak self] in
                 await self?.refreshUsage()
             }
+        }
+    }
+
+    private func resolveClaudeCodeCredential() async -> (credential: ClaudeCodeCredential?, error: String?) {
+        switch KeychainService.getClaudeCodeCredential() {
+        case .found(let credential):
+            return (credential, nil)
+        case .expired(let refreshToken):
+            if let refreshToken, await tryRefreshOAuthToken(refreshToken),
+               case .found(let credential) = KeychainService.getClaudeCodeCredential() {
+                return (credential, nil)
+            }
+            return (nil, String(localized: "error.claude_code_expired"))
+        case .notFound:
+            return (nil, String(localized: "error.claude_code_not_found"))
         }
     }
 

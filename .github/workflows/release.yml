@@ -40,21 +40,21 @@ jobs:
       - name: Package
         run: |
           TAG=${GITHUB_REF_NAME}
-          APP_PATH="build/ClaudeUsageTracker.xcarchive/Products/Applications/ClaudeUsageTracker.app"
+          APP_PATH="build/ClaudeUsageTracker.xcarchive/Products/Applications/Claude Token Tracker.app"
 
           # Create DMG
           mkdir -p build/dmg
           cp -R "$APP_PATH" build/dmg/
           ln -s /Applications build/dmg/Applications
-          hdiutil create -volname "ClaudeUsageTracker" \
+          hdiutil create -volname "Claude Token Tracker" \
             -srcfolder build/dmg \
             -ov -format UDZO \
-            "build/ClaudeUsageTracker-${TAG}.dmg"
+            "build/ClaudeTokenTracker-${TAG}.dmg"
 
           # Create ZIP (versioned + latest for Homebrew)
           cd build/dmg
-          zip -r "../ClaudeUsageTracker-${TAG}.zip" ClaudeUsageTracker.app
-          cp "../ClaudeUsageTracker-${TAG}.zip" "../ClaudeUsageTracker-latest.zip"
+          zip -r "../ClaudeTokenTracker-${TAG}.zip" "Claude Token Tracker.app"
+          cp "../ClaudeTokenTracker-${TAG}.zip" "../ClaudeTokenTracker-latest.zip"
 
       - name: Generate release notes
         run: |
@@ -68,16 +68,16 @@ jobs:
           fi
 
           cat << EOF > release_notes.md
-          ## ClaudeUsageTracker ${TAG}
+          ## Claude Token Tracker ${TAG}
 
           ### Installation
 
           **Homebrew:**
           \`\`\`bash
-          brew install --cask devsungmin/tap/claude-usage-tracker
+          brew install --cask devsungmin/tap/claude-token-tracker
           \`\`\`
 
-          **Manual:** Download **ClaudeUsageTracker-${TAG}.dmg** below.
+          **Manual:** Download **ClaudeTokenTracker-${TAG}.dmg** below.
 
           ### What's Changed
 
@@ -94,9 +94,9 @@ jobs:
         with:
           body_path: release_notes.md
           files: |
-            build/ClaudeUsageTracker-${{ github.ref_name }}.dmg
-            build/ClaudeUsageTracker-${{ github.ref_name }}.zip
-            build/ClaudeUsageTracker-latest.zip
+            build/ClaudeTokenTracker-${{ github.ref_name }}.dmg
+            build/ClaudeTokenTracker-${{ github.ref_name }}.zip
+            build/ClaudeTokenTracker-latest.zip
           draft: false
           prerelease: false
 
@@ -106,7 +106,7 @@ jobs:
         if: env.TAP_GITHUB_TOKEN != ''
         run: |
           TAG=${GITHUB_REF_NAME}
-          SHA=$(shasum -a 256 build/ClaudeUsageTracker-latest.zip | awk '{print $1}')
+          SHA=$(shasum -a 256 build/ClaudeTokenTracker-latest.zip | awk '{print $1}')
 
           # Clone tap repo and update cask
           git clone https://github.com/devsungmin/homebrew-tap.git /tmp/homebrew-tap
@@ -115,19 +115,19 @@ jobs:
           cd -
           mkdir -p /tmp/homebrew-tap/Casks
 
-          cat > /tmp/homebrew-tap/Casks/claude-usage-tracker.rb << CASK
-          cask "claude-usage-tracker" do
+          cat > /tmp/homebrew-tap/Casks/claude-token-tracker.rb << CASK
+          cask "claude-token-tracker" do
             version "${TAG#v}"
             sha256 "${SHA}"
 
-            url "https://github.com/devsungmin/claude-usage-tracker/releases/download/${TAG}/ClaudeUsageTracker-${TAG}.zip"
-            name "Claude Usage Tracker"
-            desc "Real-time Claude AI usage monitor for the macOS menu bar"
+            url "https://github.com/devsungmin/claude-usage-tracker/releases/download/${TAG}/ClaudeTokenTracker-${TAG}.zip"
+            name "Claude Token Tracker"
+            desc "Real-time Claude AI token usage monitor for the macOS menu bar"
             homepage "https://github.com/devsungmin/claude-usage-tracker"
 
             depends_on macos: ">= :ventura"
 
-            app "ClaudeUsageTracker.app"
+            app "Claude Token Tracker.app"
 
             zap trash: [
               "~/Library/Preferences/dev.sungmin.ClaudeUsageTracker.plist",
@@ -138,6 +138,6 @@ jobs:
           cd /tmp/homebrew-tap
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/claude-usage-tracker.rb
-          git commit -m "Update claude-usage-tracker to ${TAG}" || true
+          git add Casks/claude-token-tracker.rb
+          git commit -m "Update claude-token-tracker to ${TAG}" || true
           git push

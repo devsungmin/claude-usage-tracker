@@ -12,7 +12,7 @@ struct LoginView: View {
                 .font(.system(size: 36))
                 .foregroundStyle(.orange)
 
-            Text("Claude Usage Tracker")
+            Text("Claude Token Tracker")
                 .font(.headline)
 
             Text("login.subtitle")
@@ -82,7 +82,7 @@ struct LoginView: View {
                     .lineLimit(4)
             }
 
-            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")")
+            Text("v\(Bundle.main.appVersion)")
                 .font(.caption2)
                 .foregroundStyle(.quaternary)
         }

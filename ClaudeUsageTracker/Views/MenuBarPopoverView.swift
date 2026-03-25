@@ -156,7 +156,7 @@ struct UsageDashboardView: View {
                 .font(.caption)
             }
 
-            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")")
+            Text("v\(Bundle.main.appVersion)")
                 .font(.caption2)
                 .foregroundStyle(.quaternary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
