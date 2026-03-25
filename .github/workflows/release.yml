@@ -25,10 +25,10 @@ jobs:
       - name: Build
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          xcodebuild -scheme ClaudeUsageTracker \
+          xcodebuild -scheme ClaudeTokenTracker \
             -configuration Release \
             -derivedDataPath build \
-            -archivePath build/ClaudeUsageTracker.xcarchive \
+            -archivePath build/ClaudeTokenTracker.xcarchive \
             archive \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
@@ -40,7 +40,7 @@ jobs:
       - name: Package
         run: |
           TAG=${GITHUB_REF_NAME}
-          APP_PATH="build/ClaudeUsageTracker.xcarchive/Products/Applications/Claude Token Tracker.app"
+          APP_PATH="build/ClaudeTokenTracker.xcarchive/Products/Applications/Claude Token Tracker.app"
 
           # Create DMG
           mkdir -p build/dmg
@@ -115,6 +115,7 @@ jobs:
           cd -
           mkdir -p /tmp/homebrew-tap/Casks
 
+          # New cask: claude-token-tracker
           cat > /tmp/homebrew-tap/Casks/claude-token-tracker.rb << CASK
           cask "claude-token-tracker" do
             version "${TAG#v}"
@@ -135,9 +136,30 @@ jobs:
           end
           CASK
 
+          # Deprecated cask: claude-usage-tracker (backward compat for existing users)
+          cat > /tmp/homebrew-tap/Casks/claude-usage-tracker.rb << CASK
+          cask "claude-usage-tracker" do
+            version "${TAG#v}"
+            sha256 "${SHA}"
+
+            url "https://github.com/devsungmin/claude-usage-tracker/releases/download/${TAG}/ClaudeTokenTracker-${TAG}.zip"
+            name "Claude Token Tracker"
+            desc "Renamed to claude-token-tracker. This cask is kept for backward compatibility."
+            homepage "https://github.com/devsungmin/claude-usage-tracker"
+
+            depends_on macos: ">= :ventura"
+
+            app "Claude Token Tracker.app"
+
+            zap trash: [
+              "~/Library/Preferences/dev.sungmin.ClaudeUsageTracker.plist",
+            ]
+          end
+          CASK
+
           cd /tmp/homebrew-tap
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/claude-token-tracker.rb
-          git commit -m "Update claude-token-tracker to ${TAG}" || true
+          git add Casks/claude-token-tracker.rb Casks/claude-usage-tracker.rb
+          git commit -m "Rename claude-usage-tracker to claude-token-tracker ${TAG}" || true
           git push

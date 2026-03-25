@@ -1,4 +1,4 @@
-# Claude Usage Tracker
+# Claude Token Tracker
 
 ## 기능 명세
 
@@ -30,7 +30,7 @@
 - Keychain 저장: `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
 - HTTP 헤더 인젝션 방지: Session Key, OAuth 토큰에 CR/LF/NULL 검증 (`sanitizeHeaderValue`)
 - 에러 응답 새니타이징: 서버 응답 본문을 사용자에게 노출하지 않음 (`sanitizedErrorMessage`)
-- User-Agent: `ClaudeUsageTracker/{버전}` (Bundle에서 동적 읽기)
+- User-Agent: `ClaudeTokenTracker/{버전}` (Bundle에서 동적 읽기)
 - 전용 URLSession: TLS 1.2~1.3 명시 적용
 - CI: Hardened Runtime 활성화 (`ENABLE_HARDENED_RUNTIME=YES`)
 - Session Key 입력 검증 + 로그인 2초 쿨다운
@@ -46,7 +46,7 @@
 
 ## 프로젝트 구조
 
-- `ClaudeUsageTracker.swift` — @main 앱 진입점 (NSApplicationDelegateAdaptor)
+- `ClaudeTokenTracker.swift` — @main 앱 진입점 (NSApplicationDelegateAdaptor)
 - `AppDelegate.swift` — NSStatusItem, NSPopover, 우클릭 NSMenu, 설정 NSWindow 관리
 - `Models/TokenUsage.swift` — UsageData, UsageLimit
 - `Models/UserSettings.swift` — 표시 모드, 새로고침 간격, 로그인 시 자동 실행 (UserDefaults + SMAppService)

@@ -17,8 +17,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CDADF3CA2F6E609F0031868F"
                BuildableName = "Claude Token Tracker.app"
-               BlueprintName = "ClaudeUsageTracker"
-               ReferencedContainer = "container:ClaudeUsageTracker.xcodeproj">
+               BlueprintName = "ClaudeTokenTracker"
+               ReferencedContainer = "container:ClaudeTokenTracker.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,8 +46,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CDADF3CA2F6E609F0031868F"
             BuildableName = "Claude Token Tracker.app"
-            BlueprintName = "ClaudeUsageTracker"
-            ReferencedContainer = "container:ClaudeUsageTracker.xcodeproj">
+            BlueprintName = "ClaudeTokenTracker"
+            ReferencedContainer = "container:ClaudeTokenTracker.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -63,10 +63,19 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CDADF3CA2F6E609F0031868F"
             BuildableName = "Claude Token Tracker.app"
-            BlueprintName = "ClaudeUsageTracker"
-            ReferencedContainer = "container:ClaudeUsageTracker.xcodeproj">
+            BlueprintName = "ClaudeTokenTracker"
+            ReferencedContainer = "container:ClaudeTokenTracker.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "CDADF3CA2F6E609F0031868F"
+            BuildableName = "Claude Token Tracker.app"
+            BlueprintName = "ClaudeTokenTracker"
+            ReferencedContainer = "container:ClaudeTokenTracker.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

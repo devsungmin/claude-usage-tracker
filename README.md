@@ -1,4 +1,4 @@
-# Claude Usage Tracker
+# Claude Token Tracker
 
 🇰🇷 [한국어 버전](README.ko.md)
 
@@ -15,14 +15,14 @@ A macOS menu bar app that displays your Claude AI usage limits in real time — 
 
 | File | Description |
 |------|-------------|
-| `ClaudeUsageTracker-vX.X.X.dmg` | DMG installer (drag to Applications) |
-| `ClaudeUsageTracker-vX.X.X.zip` | Zipped .app bundle |
+| `ClaudeTokenTracker-vX.X.X.dmg` | DMG installer (drag to Applications) |
+| `ClaudeTokenTracker-vX.X.X.zip` | Zipped .app bundle |
 
 ---
 
 ## Screenshot
 
-| Claude Usage Tracker | Claude Desktop Settings |
+| Claude Token Tracker | Claude Desktop Settings |
 |:---:|:---:|
 | ![App Popover](screenshots/app-popover.png) | ![Claude Desktop](screenshots/claude-desktop-compare.png) |
 
@@ -102,14 +102,14 @@ anthropic-ratelimit-unified-7d-utilization: 0.01
 ### Homebrew (recommended)
 
 ```bash
-brew install --cask devsungmin/tap/claude-usage-tracker
+brew install --cask devsungmin/tap/claude-token-tracker
 ```
 
 ### Download
 
 1. Go to **[Releases](https://github.com/devsungmin/claude-usage-tracker/releases/latest)**
-2. Download `ClaudeUsageTracker-vX.X.X.dmg`
-3. Open the DMG and drag **ClaudeUsageTracker** to Applications
+2. Download `ClaudeTokenTracker-vX.X.X.dmg`
+3. Open the DMG and drag **Claude Token Tracker** to Applications
 4. Launch from Applications — the app appears in the menu bar
 
 ### Build from source
@@ -117,7 +117,7 @@ brew install --cask devsungmin/tap/claude-usage-tracker
 ```bash
 git clone https://github.com/devsungmin/claude-usage-tracker.git
 cd claude-usage-tracker
-open ClaudeUsageTracker.xcodeproj
+open ClaudeTokenTracker.xcodeproj
 ```
 
 Then **⌘R** to build and run.
@@ -152,9 +152,9 @@ If Claude Code is installed and logged in, click **"Claude Code에서 자동 연
 ## Project Structure
 
 ```text
-ClaudeUsageTracker/
+ClaudeTokenTracker/
 ├── AppDelegate.swift              - NSStatusItem, NSPopover, right-click menu, settings window
-├── ClaudeUsageTracker.swift       - @main app entry point
+├── ClaudeTokenTracker.swift       - @main app entry point
 ├── Models/
 │   ├── TokenUsage.swift           - UsageData, UsageLimit (5h/7d/opus/sonnet)
 │   └── UserSettings.swift         - Display mode, refresh interval, launch at login
